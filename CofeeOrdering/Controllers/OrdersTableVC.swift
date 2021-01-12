@@ -8,9 +8,7 @@
 import Foundation
 import UIKit
 
-class OrdersTableVC: UITableViewController, AddOrderVCDelegate {
-    
-    
+class OrdersTableVC: UITableViewController {
     
     let viewModel = OrderListViewModel()
     
@@ -23,22 +21,9 @@ class OrdersTableVC: UITableViewController, AddOrderVCDelegate {
 }
 
 // MARK: - Extensions
+// TableViewDelegate, TableViewDataSource
 extension OrdersTableVC {
-    
-    func fetchData() {
         
-        Webservice().load(resource: OrderModel.all) { [weak self] result in
-            switch result {
-            case .success(let orders):
-                self?.viewModel.ordersViewModel = orders.map(OrderViewModel.init)
-                self?.tableView.reloadData()
-            case .failure(let error):
-                print(error)
-            }
-            
-        }
-    }
-    
     override func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
@@ -58,8 +43,22 @@ extension OrdersTableVC {
     }
 }
 
-
+// Private methods
 extension OrdersTableVC {
+    
+    private func fetchData() {
+        
+        Webservice().load(resource: OrderModel.all) { [weak self] result in
+            switch result {
+            case .success(let orders):
+                self?.viewModel.ordersViewModel = orders.map(OrderViewModel.init)
+                self?.tableView.reloadData()
+            case .failure(let error):
+                print(error)
+            }
+            
+        }
+    }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
@@ -69,6 +68,10 @@ extension OrdersTableVC {
         
     }
     
+}
+
+// AddOrderVCDelegate
+extension OrdersTableVC: AddOrderVCDelegate {
     func addOrderVCDidSave(order: OrderModel, controller: UIViewController) {
         controller.dismiss(animated: true, completion: nil)
         
@@ -76,9 +79,10 @@ extension OrdersTableVC {
         viewModel.ordersViewModel.append(orderVM)
         tableView.insertRows(at: [IndexPath.init(row: viewModel.ordersViewModel.count - 1, section: 0)], with: .automatic)
     }
-    
+
     func addOrderVCDidCancel(controller: UIViewController) {
         controller.dismiss(animated: true, completion: nil)
     }
-    
 }
+
+
